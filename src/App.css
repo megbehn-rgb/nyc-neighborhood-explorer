@@ -1,0 +1,54 @@
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── Chrome (search + filters) ─────────────────────────────────────── */
+.chrome {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none; /* children opt-in */
+  max-width: 640px;
+}
+
+.chrome-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+/* ── Quiz Me button ─────────────────────────────────────────────────── */
+.quiz-me-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: none;
+  cursor: pointer;
+  font: 500 14px/1 var(--font);
+  color: var(--text-primary);
+  transition: background 0.15s;
+  white-space: nowrap;
+  border-radius: var(--radius);
+}
+
+.quiz-me-btn:hover { background: rgba(0, 0, 0, 0.04); }
+.quiz-me-btn:active { background: rgba(0, 0, 0, 0.08); }
+
+/* ── Shared glass card style ────────────────────────────────────────── */
+.glass {
+  background: var(--chrome-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--chrome-border);
+  border-radius: var(--radius);
+  box-shadow: var(--chrome-shadow);
+}

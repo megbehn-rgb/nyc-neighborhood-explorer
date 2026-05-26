@@ -1,0 +1,16 @@
+# Environment — never commit tokens
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Vite / editor
+*.local
+.vite/
+.DS_Store

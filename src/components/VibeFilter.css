@@ -1,0 +1,36 @@
+.vibe-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px;
+  pointer-events: auto;
+}
+
+.vibe-tag {
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  font: 500 12px/1.2 var(--font);
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.vibe-tag:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+.vibe-tag--active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+.vibe-tag--active:hover {
+  background: #333;
+  border-color: #333;
+  color: #fff;
+}

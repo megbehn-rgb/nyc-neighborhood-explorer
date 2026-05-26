@@ -1,0 +1,29 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --chrome-bg: rgba(255, 255, 255, 0.88);
+  --chrome-border: rgba(0, 0, 0, 0.08);
+  --chrome-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
+  --text-primary: #1a1a1a;
+  --text-muted: #6b7280;
+  --radius: 10px;
+  --panel-width: 380px;
+}
+
+body {
+  font-family: var(--font);
+  background: #1a1a1a;
+  overflow: hidden;
+  height: 100dvh;
+}
+
+#root {
+  width: 100vw;
+  height: 100dvh;
+  position: relative;
+}
