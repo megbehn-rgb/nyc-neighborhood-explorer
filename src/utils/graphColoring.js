@@ -2,16 +2,25 @@
  * Greedy graph coloring for neighborhood polygons.
  * Builds an adjacency graph from GeoJSON features (sharing any boundary edge),
  * then assigns colors so no two adjacent neighborhoods share the same color.
+ *
+ * Color candidate selection starts at (nodeIndex % numColors) and wraps around,
+ * which distributes usage across the full palette rather than always assigning
+ * the lowest-index color (which would bottleneck at 4–5 colors for planar graphs).
  */
 
-// Shared-edge threshold: two features are adjacent if their bounding boxes
-// overlap and they share at least one coordinate pair within this tolerance.
 const TOLERANCE = 0.002; // degrees (~150m) — enough to catch shared edges
 
+// Returns all outer-ring coordinates regardless of Polygon vs MultiPolygon geometry.
+function getAllCoords(feature) {
+  const { type, coordinates } = feature.geometry;
+  if (type === 'Polygon') return coordinates[0];
+  if (type === 'MultiPolygon') return coordinates.flatMap(poly => poly[0]);
+  return [];
+}
+
 function bboxOf(feature) {
-  const coords = feature.geometry.coordinates[0];
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const [x, y] of coords) {
+  for (const [x, y] of getAllCoords(feature)) {
     if (x < minX) minX = x;
     if (x > maxX) maxX = x;
     if (y < minY) minY = y;
@@ -30,9 +39,8 @@ function bboxesOverlap(a, b) {
 }
 
 function shareEdge(featA, featB) {
-  const coordsA = featA.geometry.coordinates[0];
-  const coordsB = featB.geometry.coordinates[0];
-  // Check if any vertex of A is within TOLERANCE of any vertex of B
+  const coordsA = getAllCoords(featA);
+  const coordsB = getAllCoords(featB);
   for (const [ax, ay] of coordsA) {
     for (const [bx, by] of coordsB) {
       if (Math.abs(ax - bx) < TOLERANCE && Math.abs(ay - by) < TOLERANCE) {
@@ -69,17 +77,19 @@ export function greedyColor(features, numColors = 6) {
     for (const j of adj[i]) {
       if (colors[j] !== -1) usedByNeighbors.add(colors[j]);
     }
-    for (let c = 0; c < numColors; c++) {
+    // Rotate start index so each node prefers a different color,
+    // spreading usage across the full palette.
+    const start = i % numColors;
+    for (let delta = 0; delta < numColors; delta++) {
+      const c = (start + delta) % numColors;
       if (!usedByNeighbors.has(c)) {
         colors[i] = c;
         break;
       }
     }
-    // Fallback: cycle through colors if all are used
     if (colors[i] === -1) colors[i] = i % numColors;
   }
 
-  // Return a map from neighborhood id → color index
   const colorMap = {};
   for (let i = 0; i < n; i++) {
     colorMap[features[i].properties.id] = colors[i];

@@ -109,17 +109,20 @@ export default function App() {
         />
       ) : (
         /* ── Normal chrome ────────────────────────────────────── */
-        <div className="chrome">
-          <div className="chrome-top">
+        <div className="topbar">
+          <div className="topbar-main">
+            <h1 className="app-title">🧸 Teddy Graham's NYC Neighborhood Explorer 🧸</h1>
             <SearchBar onSelect={selectNeighborhood} />
-            <RandomButton onClick={handleRandom} />
-            <button className="quiz-me-btn glass" onClick={startQuiz}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M8 11v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              Quiz Me
-            </button>
+            <div className="topbar-actions">
+              <RandomButton onClick={handleRandom} />
+              <button className="quiz-me-btn" onClick={startQuiz}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M8 11v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Quiz Me
+              </button>
+            </div>
           </div>
           <VibeFilter activeTags={activeTags} onToggle={toggleTag} />
         </div>

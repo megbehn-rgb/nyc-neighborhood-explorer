@@ -13,6 +13,7 @@
   --text-muted: #6b7280;
   --radius: 10px;
   --panel-width: 380px;
+  --topbar-height: 90px;
 }
 
 body {

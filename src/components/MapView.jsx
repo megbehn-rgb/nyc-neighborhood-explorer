@@ -12,6 +12,8 @@ const PALETTE = [
   '#ffb55a',
   '#8bd3c7',
   '#e8a0bf',
+  '#c9b8e8',
+  '#f4d06f',
 ];
 
 const FILL_OPACITY_BASE  = 0.45;
