@@ -112,7 +112,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px 16px;
-  padding: 16px 20px;
+  padding: 16px 20px 18px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -142,64 +142,34 @@
   font-weight: 400;
 }
 
-/* ── Boundaries ──────────────────────────────────────────────────── */
-.detail-boundaries {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 14px 20px;
+/* ── About ───────────────────────────────────────────────────────── */
+.detail-about {
+  padding: 18px 20px;
+  background: #f8f9fa;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.detail-boundaries-icon {
-  color: var(--text-muted);
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.detail-boundaries-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 3px;
-}
-
-.detail-boundaries-text {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* ── Blurb ───────────────────────────────────────────────────────── */
-.detail-blurb {
-  font-size: 15px;
-  font-style: italic;
-  line-height: 1.65;
+.detail-about-blurb {
+  font-size: 14px;
+  line-height: 1.7;
   color: #333;
-  padding: 18px 20px 0;
-  border-left: 3px solid #e0e0e0;
-  margin: 0 20px;
+  margin: 0 0 10px;
 }
 
-/* ── Context ─────────────────────────────────────────────────────── */
-.detail-context {
+.detail-about-context {
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-muted);
-  padding: 12px 20px 0;
+  margin: 0;
 }
 
-/* ── Notable sites ───────────────────────────────────────────────── */
-.detail-sites {
+/* ── Generic section (Boundaries, Notable Sites) ─────────────────── */
+.detail-section {
   padding: 18px 20px 0;
 }
 
-.detail-sites-heading {
-  font-size: 12px;
+.detail-section-heading {
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -207,6 +177,14 @@
   margin-bottom: 10px;
 }
 
+.detail-section-body {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Notable sites list ──────────────────────────────────────────── */
 .detail-sites-list {
   list-style: none;
   display: flex;

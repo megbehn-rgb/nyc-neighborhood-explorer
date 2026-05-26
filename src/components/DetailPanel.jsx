@@ -5,7 +5,6 @@ export default function DetailPanel({ neighborhood, onClose }) {
   const [imgError, setImgError] = useState(false);
   const open = !!neighborhood;
 
-  // Reset image error state when neighborhood changes
   useEffect(() => { setImgError(false); }, [neighborhood?.id]);
 
   return (
@@ -39,7 +38,7 @@ export default function DetailPanel({ neighborhood, onClose }) {
               ))}
             </div>
 
-            {/* ── Stats row ──────────────────────────────────────── */}
+            {/* ── Stats ──────────────────────────────────────────── */}
             <div className="detail-stats">
               <div className="detail-stat">
                 <span className="detail-stat-label">Population</span>
@@ -58,30 +57,24 @@ export default function DetailPanel({ neighborhood, onClose }) {
               </div>
             </div>
 
-            {/* ── Blurb ──────────────────────────────────────────── */}
-            <p className="detail-blurb">"{neighborhood.blurb}"</p>
+            {/* ── About ──────────────────────────────────────────── */}
+            <div className="detail-about">
+              <h3 className="detail-section-heading">About</h3>
+              <p className="detail-about-blurb">{neighborhood.blurb}</p>
+              <p className="detail-about-context">{neighborhood.establishedContext}</p>
+            </div>
 
-            {/* ── Street context ─────────────────────────────────── */}
+            {/* ── Boundaries ─────────────────────────────────────── */}
             {neighborhood.streetContext && (
-              <div className="detail-boundaries">
-                <svg className="detail-boundaries-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M8 1v2M8 12v2M1 7h2M12 7h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M8 10v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <div>
-                  <span className="detail-boundaries-label">Boundaries</span>
-                  <p className="detail-boundaries-text">{neighborhood.streetContext}</p>
-                </div>
+              <div className="detail-section">
+                <h3 className="detail-section-heading">Boundaries</h3>
+                <p className="detail-section-body">{neighborhood.streetContext}</p>
               </div>
             )}
 
-            {/* ── Context ────────────────────────────────────────── */}
-            <p className="detail-context">{neighborhood.establishedContext}</p>
-
-            {/* ── Notable sites ──────────────────────────────────── */}
-            <div className="detail-sites">
-              <h3 className="detail-sites-heading">Notable sites</h3>
+            {/* ── Notable sites ───────────────────────────────────── */}
+            <div className="detail-section">
+              <h3 className="detail-section-heading">Notable sites</h3>
               <ul className="detail-sites-list">
                 {neighborhood.notable_sites.map(site => (
                   <li key={site}>{site}</li>
