@@ -75,3 +75,11 @@
   font-size: 11px;
   color: var(--text-muted);
 }
+
+.search-option-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
