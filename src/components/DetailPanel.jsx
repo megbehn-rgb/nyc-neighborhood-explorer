@@ -9,6 +9,7 @@ export default function DetailPanel({ neighborhood, onClose }) {
 
   return (
     <div className={`detail-panel ${open ? 'detail-panel--open' : ''}`} role="complementary">
+      <div className="detail-drag-handle" aria-hidden="true" />
       {neighborhood && (
         <>
           {/* ── Hero image ─────────────────────────────────────── */}

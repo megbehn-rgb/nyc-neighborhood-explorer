@@ -26,6 +26,10 @@ const BY_ID = Object.fromEntries(neighborhoodData.map(n => [n.id, n]));
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
+// Stable device-capability checks (evaluated once at module load)
+const IS_MOBILE     = window.matchMedia('(max-width: 767px)').matches;
+const SUPPORTS_HOVER = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
 // Maps each MTA color to the combined label shown on the badge
 const LABEL_GROUPS = {
   '#EE352E': '1·2·3',
@@ -160,7 +164,7 @@ export default function MapView({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/light-v11',
       center: [-73.971, 40.776],
-      zoom: 11.5,
+      zoom: IS_MOBILE ? 12 : 11.5,
       minZoom: 10,
       maxZoom: 16,
     });
@@ -312,6 +316,7 @@ export default function MapView({
       // ── Hover (disabled in quiz mode) ───────────────────────────
       map.on('mousemove', 'hoods-fill', (e) => {
         if (quizModeRef.current) return;
+        if (!SUPPORTS_HOVER) return; // no hover effects on touch devices
         if (!e.features.length) return;
         const id = e.features[0].properties.id;
         if (hoveredRef.current !== id) {
@@ -400,7 +405,7 @@ export default function MapView({
     if (!map || !flyToId) return;
 
     if (flyToId === '__reset__') {
-      map.flyTo({ center: [-73.971, 40.776], zoom: 11.5, duration: 900 });
+      map.flyTo({ center: [-73.971, 40.776], zoom: IS_MOBILE ? 12 : 11.5, duration: 900 });
       onFlyComplete?.();
       return;
     }
@@ -422,9 +427,12 @@ export default function MapView({
       if (lat > maxLat) maxLat = lat;
     }
 
+    const padding = IS_MOBILE
+      ? { top: 50, bottom: Math.round(window.innerHeight * 0.58), left: 20, right: 20 }
+      : { top: 120, bottom: 60, left: 60, right: 420 };
     map.fitBounds(
       [[minLng, minLat], [maxLng, maxLat]],
-      { padding: { top: 120, bottom: 60, left: 60, right: 420 }, maxZoom: 15, duration: 900 }
+      { padding, maxZoom: 15, duration: 900 }
     );
     onFlyComplete?.();
   }, [flyToId, onFlyComplete]);

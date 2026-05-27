@@ -6,6 +6,12 @@
   padding: 0 10px;
 }
 
+@media (max-width: 767px) {
+  .search-wrap {
+    min-width: 0;
+  }
+}
+
 .search-icon {
   display: flex;
   align-items: center;

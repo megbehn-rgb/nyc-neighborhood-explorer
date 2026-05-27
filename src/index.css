@@ -16,6 +16,13 @@
   --topbar-height: 90px;
 }
 
+@media (max-width: 767px) {
+  :root {
+    /* Two-row topbar (title+actions, search) + filter row */
+    --topbar-height: 130px;
+  }
+}
+
 body {
   font-family: var(--font);
   background: #1a1a1a;

@@ -162,3 +162,65 @@
   border-radius: var(--radius);
   box-shadow: var(--chrome-shadow);
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   MOBILE  ≤ 767px
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* ── Topbar: two-row layout ──────────────────────────────────────── */
+  .topbar-main {
+    flex-wrap: wrap;
+    padding: 7px 12px;
+    gap: 6px;
+  }
+
+  /* Row 1 left: title truncates */
+  .app-title {
+    order: 1;
+    flex: 1 1 0;
+    font-size: 12px;
+  }
+
+  /* Row 1 right: action buttons */
+  .topbar-actions {
+    order: 2;
+    flex-shrink: 0;
+    gap: 4px;
+  }
+
+  /* Row 2: search bar spans full width */
+  .topbar-main .search-wrap {
+    order: 3;
+    flex: 0 0 100%;
+    min-width: 0;
+    height: 32px;
+  }
+
+  /* Smaller action buttons */
+  .topbar-main .random-btn.glass,
+  .quiz-me-btn,
+  .subway-btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  /* Filter row: wrap freely, 12px tags */
+  .topbar .vibe-filter.glass {
+    padding: 6px 12px 8px;
+    gap: 5px;
+  }
+
+  .topbar .vibe-tag {
+    font-size: 12px;
+    padding: 4px 9px;
+  }
+
+  /* Prevent horizontal overflow at 375px */
+  .topbar {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}

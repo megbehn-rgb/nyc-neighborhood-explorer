@@ -102,6 +102,67 @@
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+/* ── Mobile quiz layout ───────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .quiz-bar {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    transform: none;
+    border-radius: 0;
+    padding: 10px 14px;
+    gap: 10px;
+    white-space: normal;
+  }
+
+  .quiz-prompt {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .quiz-name {
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+  }
+
+  /* Compact score: hide " correct" and "left" labels */
+  .quiz-score-label { display: none; }
+  .quiz-remaining   { display: none; }
+
+  .quiz-exit-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  /* Result toast: full-width, no translateX */
+  .quiz-result {
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    transform: none;
+    white-space: normal;
+    text-align: center;
+    animation-name: quiz-pop-mobile;
+  }
+
+  /* Summary card: narrower padding */
+  .quiz-summary {
+    padding: 32px 28px;
+    min-width: 0;
+    width: calc(100vw - 48px);
+  }
+}
+
+@keyframes quiz-pop-mobile {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Summary overlay ──────────────────────────────────────────────── */
 .quiz-overlay {
   position: absolute;
