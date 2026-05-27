@@ -26,9 +26,22 @@ const BY_ID = Object.fromEntries(neighborhoodData.map(n => [n.id, n]));
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
+// Maps each MTA color to the combined label shown on the badge
+const LABEL_GROUPS = {
+  '#EE352E': '1·2·3',
+  '#00933C': '4·5·6',
+  '#B933AD': '7',
+  '#0039A6': 'A·C·E',
+  '#FF6319': 'B·D·F·M',
+  '#6CBE45': 'G',
+  '#996633': 'J·Z',
+  '#A7A9AC': 'L',
+  '#FCCC0A': 'N·Q·R·W',
+};
+
 export default function MapView({
   selected, activeTags, flyToId, onFlyComplete, onSelect,
-  quizMode, quizResult, onQuizClick,
+  quizMode, quizResult, onQuizClick, subwayVisible,
 }) {
   const containerRef   = useRef(null);
   const mapRef         = useRef(null);
@@ -42,11 +55,13 @@ export default function MapView({
   const onQuizClickRef  = useRef(onQuizClick);
   const onSelectRef     = useRef(onSelect);
   const rebuildPaintRef = useRef(null);
+  const subwayVisibleRef = useRef(subwayVisible);
 
-  useEffect(() => { quizModeRef.current    = quizMode;    }, [quizMode]);
-  useEffect(() => { quizResultRef.current  = quizResult;  }, [quizResult]);
-  useEffect(() => { onQuizClickRef.current = onQuizClick; }, [onQuizClick]);
-  useEffect(() => { onSelectRef.current    = onSelect;    }, [onSelect]);
+  useEffect(() => { quizModeRef.current     = quizMode;       }, [quizMode]);
+  useEffect(() => { quizResultRef.current   = quizResult;     }, [quizResult]);
+  useEffect(() => { onQuizClickRef.current  = onQuizClick;    }, [onQuizClick]);
+  useEffect(() => { onSelectRef.current     = onSelect;       }, [onSelect]);
+  useEffect(() => { subwayVisibleRef.current = subwayVisible; }, [subwayVisible]);
 
   const getFillColor = useCallback((id, colorMap) => {
     const idx = colorMap[id] ?? 0;
@@ -208,6 +223,92 @@ export default function MapView({
 
       rebuildPaint();
 
+      // ── Subway overlay ──────────────────────────────────────────
+      try {
+        const r = await fetch('/subway-lines.geojson');
+        if (!r.ok) throw new Error(`subway fetch failed: ${r.status}`);
+        const subwayData = await r.json();
+
+        map.addSource('subway', { type: 'geojson', data: subwayData });
+
+        const initVis = subwayVisibleRef.current ? 'visible' : 'none';
+
+        map.addLayer({
+          id: 'subway-halo',
+          type: 'line',
+          source: 'subway',
+          layout: { 'line-join': 'round', 'line-cap': 'round', visibility: initVis },
+          paint: {
+            'line-color': '#ffffff',
+            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 3.5, 16, 7],
+            'line-opacity': 0.85,
+          },
+        });
+
+        map.addLayer({
+          id: 'subway-lines',
+          type: 'line',
+          source: 'subway',
+          layout: { 'line-join': 'round', 'line-cap': 'round', visibility: initVis },
+          paint: {
+            'line-color': ['get', 'lineColor'],
+            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 16, 4],
+            'line-opacity': 0.9,
+          },
+        });
+
+        // Build a label source grouped by color (one MultiLineString per MTA color group)
+        // so combined labels like "A·C·E" appear instead of three separate badges.
+        const byColor = {};
+        for (const f of subwayData.features) {
+          const color = f.properties.lineColor;
+          if (!byColor[color]) {
+            byColor[color] = {
+              type: 'Feature',
+              properties: {
+                lineColor: color,
+                label: LABEL_GROUPS[color] ?? f.properties.ref,
+              },
+              geometry: { type: 'MultiLineString', coordinates: [] },
+            };
+          }
+          const segs = f.geometry.type === 'MultiLineString'
+            ? f.geometry.coordinates : [f.geometry.coordinates];
+          byColor[color].geometry.coordinates.push(...segs);
+        }
+
+        map.addSource('subway-label-src', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: Object.values(byColor) },
+        });
+
+        map.addLayer({
+          id: 'subway-labels',
+          type: 'symbol',
+          source: 'subway-label-src',
+          layout: {
+            'symbol-placement': 'line',
+            'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 250, 14, 400],
+            'text-field': ['get', 'label'],
+            'text-font': ['DIN Pro Bold', 'Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 10, 10, 15, 13],
+            'text-rotation-alignment': 'map',
+            'text-pitch-alignment': 'viewport',
+            'text-allow-overlap': false,
+            'text-padding': 3,
+            visibility: initVis,
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': ['get', 'lineColor'],
+            'text-halo-width': 8,
+            'text-halo-blur': 0,
+          },
+        });
+      } catch (err) {
+        console.warn('Subway overlay unavailable:', err);
+      }
+
       // ── Hover (disabled in quiz mode) ───────────────────────────
       map.on('mousemove', 'hoods-fill', (e) => {
         if (quizModeRef.current) return;
@@ -271,6 +372,18 @@ export default function MapView({
 
   // Rebuild paint whenever relevant state changes
   useEffect(() => { rebuildPaint(); }, [rebuildPaint]);
+
+  // Toggle subway layer visibility
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.getLayer('subway-lines')) return;
+    const v = subwayVisible ? 'visible' : 'none';
+    map.setLayoutProperty('subway-halo',   'visibility', v);
+    map.setLayoutProperty('subway-lines',  'visibility', v);
+    if (map.getLayer('subway-labels')) {
+      map.setLayoutProperty('subway-labels', 'visibility', v);
+    }
+  }, [subwayVisible]);
 
   // Crosshair cursor when quiz mode is active
   useEffect(() => {

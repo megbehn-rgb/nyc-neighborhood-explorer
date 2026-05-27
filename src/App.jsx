@@ -21,9 +21,10 @@ function shuffle(arr) {
 
 export default function App() {
   // ── Normal mode state ────────────────────────────────────────────
-  const [selected,   setSelected]   = useState(null);
-  const [activeTags, setActiveTags] = useState([]);
-  const [flyToId,    setFlyToId]    = useState(null);
+  const [selected,      setSelected]      = useState(null);
+  const [activeTags,    setActiveTags]    = useState([]);
+  const [flyToId,       setFlyToId]       = useState(null);
+  const [subwayVisible, setSubwayVisible] = useState(false);
 
   // ── Quiz state ───────────────────────────────────────────────────
   const [quizActive,   setQuizActive]   = useState(false);
@@ -115,6 +116,13 @@ export default function App() {
             <SearchBar onSelect={selectNeighborhood} />
             <div className="topbar-actions">
               <RandomButton onClick={handleRandom} />
+              <button
+                className={`subway-btn${subwayVisible ? ' subway-btn--active' : ''}`}
+                onClick={() => setSubwayVisible(v => !v)}
+                aria-pressed={subwayVisible}
+              >
+                🚇 Subway
+              </button>
               <button className="quiz-me-btn" onClick={startQuiz}>
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="1.5"/>
@@ -138,6 +146,7 @@ export default function App() {
         quizMode={quizActive}
         quizResult={quizResult}
         onQuizClick={handleQuizClick}
+        subwayVisible={subwayVisible}
       />
 
       {/* ── Detail panel (hidden in quiz mode) ────────────────── */}

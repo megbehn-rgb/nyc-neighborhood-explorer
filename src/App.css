@@ -85,6 +85,35 @@
 .topbar-main .random-btn.glass:hover  { background: rgba(0, 0, 0, 0.07); }
 .topbar-main .random-btn.glass:active { background: rgba(0, 0, 0, 0.12); }
 
+/* ── Subway toggle button ────────────────────────────────────────────── */
+.subway-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  font: 500 13px/1 var(--font);
+  color: var(--text-primary);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.subway-btn:hover  { background: rgba(0, 0, 0, 0.07); }
+.subway-btn:active { background: rgba(0, 0, 0, 0.12); }
+
+.subway-btn--active {
+  background: #0039A6;
+  border-color: #0039A6;
+  color: #fff;
+}
+
+.subway-btn--active:hover  { background: #002d8a; border-color: #002d8a; }
+.subway-btn--active:active { background: #002070; border-color: #002070; }
+
 /* ── Quiz Me button ──────────────────────────────────────────────────── */
 .quiz-me-btn {
   display: flex;
