@@ -127,7 +127,7 @@ export default function App() {
         /* ── Normal chrome ────────────────────────────────────── */
         <div className="topbar">
           <div className="topbar-main">
-            <h1 className="app-title">🧸 Teddy Graham's NYC Neighborhood Explorer 🧸</h1>
+            <h1 className="app-title">NYC Neighborhood Explorer</h1>
             <SearchBar onSelect={selectNeighborhood} />
             <div className="topbar-actions">
               <RandomButton onClick={handleRandom} />
