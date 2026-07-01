@@ -46,6 +46,7 @@ const LABEL_GROUPS = {
 export default function MapView({
   selected, activeTags, flyToId, onFlyComplete, onSelect,
   quizMode, quizResult, onQuizClick, subwayVisible,
+  findMeActive, onFindMeComplete, onToast,
 }) {
   const containerRef   = useRef(null);
   const mapRef         = useRef(null);
@@ -61,11 +62,18 @@ export default function MapView({
   const rebuildPaintRef = useRef(null);
   const subwayVisibleRef = useRef(subwayVisible);
 
+  // Find Me refs
+  const locationMarkerRef    = useRef(null);
+  const onFindMeCompleteRef  = useRef(onFindMeComplete);
+  const onToastRef           = useRef(onToast);
+
   useEffect(() => { quizModeRef.current     = quizMode;       }, [quizMode]);
   useEffect(() => { quizResultRef.current   = quizResult;     }, [quizResult]);
   useEffect(() => { onQuizClickRef.current  = onQuizClick;    }, [onQuizClick]);
   useEffect(() => { onSelectRef.current     = onSelect;       }, [onSelect]);
   useEffect(() => { subwayVisibleRef.current = subwayVisible; }, [subwayVisible]);
+  useEffect(() => { onFindMeCompleteRef.current = onFindMeComplete; }, [onFindMeComplete]);
+  useEffect(() => { onToastRef.current          = onToast;          }, [onToast]);
 
   const getFillColor = useCallback((id, colorMap) => {
     const idx = colorMap[id] ?? 0;
@@ -389,6 +397,77 @@ export default function MapView({
       map.setLayoutProperty('subway-labels', 'visibility', v);
     }
   }, [subwayVisible]);
+
+  // ── Find Me geolocation ───────────────────────────────────────────
+  useEffect(() => {
+    if (!findMeActive) return;
+
+    if (!navigator.geolocation) {
+      onToastRef.current?.('Geolocation is not supported by your browser.');
+      onFindMeCompleteRef.current?.();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const map = mapRef.current;
+        if (!map) { onFindMeCompleteRef.current?.(); return; }
+
+        // Fly to user's location
+        map.flyTo({ center: [lng, lat], zoom: 14, duration: 1200 });
+
+        // Create or reposition the pulsing dot marker
+        if (locationMarkerRef.current) {
+          locationMarkerRef.current.setLngLat([lng, lat]);
+        } else {
+          const el = document.createElement('div');
+          el.className = 'find-me-marker';
+          el.innerHTML = '<div class="find-me-pulse"></div><div class="find-me-dot"></div>';
+          locationMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'center' })
+            .setLngLat([lng, lat])
+            .addTo(map);
+        }
+
+        // Point-in-polygon: open panel if inside a Manhattan neighborhood
+        const geojson = geojsonRef.current;
+        if (geojson) {
+          const pt = {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [lng, lat] },
+            properties: {},
+          };
+          let foundId = null;
+          for (const feat of geojson.features) {
+            if (booleanPointInPolygon(pt, feat)) {
+              foundId = feat.properties.id;
+              break;
+            }
+          }
+          if (foundId) {
+            const hood = BY_ID[foundId];
+            if (hood) onSelectRef.current(hood);
+          } else {
+            onToastRef.current?.("You're outside Manhattan — explore the map to find neighborhoods");
+          }
+        }
+
+        onFindMeCompleteRef.current?.();
+      },
+      (err) => {
+        if (err.code === GeolocationPositionError.PERMISSION_DENIED) {
+          onToastRef.current?.(
+            'Location access was denied — enable it in your browser settings to use this feature.'
+          );
+        } else {
+          onToastRef.current?.('Unable to determine your location. Please try again.');
+        }
+        onFindMeCompleteRef.current?.();
+      },
+      { timeout: 12000, maximumAge: 60000, enableHighAccuracy: false }
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [findMeActive]);
 
   // Crosshair cursor when quiz mode is active
   useEffect(() => {

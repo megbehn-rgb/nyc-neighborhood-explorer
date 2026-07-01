@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import MapView from './components/MapView';
 import DetailPanel from './components/DetailPanel';
 import SearchBar from './components/SearchBar';
@@ -25,6 +25,21 @@ export default function App() {
   const [activeTags,    setActiveTags]    = useState([]);
   const [flyToId,       setFlyToId]       = useState(null);
   const [subwayVisible, setSubwayVisible] = useState(false);
+
+  // ── Find Me state ────────────────────────────────────────────────
+  const [findMeState, setFindMeState] = useState('idle'); // 'idle' | 'locating'
+  const [toast,       setToast]       = useState(null);
+
+  // Auto-dismiss toast after 3.8 s
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 3800);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  const showToast = useCallback((msg) => setToast(msg), []);
+  const handleFindMe = useCallback(() => setFindMeState('locating'), []);
+  const onFindMeComplete = useCallback(() => setFindMeState('idle'), []);
 
   // ── Quiz state ───────────────────────────────────────────────────
   const [quizActive,   setQuizActive]   = useState(false);
@@ -123,6 +138,18 @@ export default function App() {
               >
                 🚇 Subway
               </button>
+              <button
+                className="findme-btn"
+                onClick={handleFindMe}
+                disabled={findMeState === 'locating'}
+                aria-label="Find my location"
+              >
+                {findMeState === 'locating' ? (
+                  <><span className="findme-spinner" aria-hidden="true" /> Locating…</>
+                ) : (
+                  '📍 Find Me'
+                )}
+              </button>
               <button className="quiz-me-btn" onClick={startQuiz}>
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="1.5"/>
@@ -147,12 +174,18 @@ export default function App() {
         quizResult={quizResult}
         onQuizClick={handleQuizClick}
         subwayVisible={subwayVisible}
+        findMeActive={findMeState === 'locating'}
+        onFindMeComplete={onFindMeComplete}
+        onToast={showToast}
       />
 
       {/* ── Detail panel (hidden in quiz mode) ────────────────── */}
       {!quizActive && (
         <DetailPanel neighborhood={selected} onClose={closePanel} />
       )}
+
+      {/* ── Toast notification ────────────────────────────────── */}
+      {toast && <div className="app-toast" role="status">{toast}</div>}
     </div>
   );
 }

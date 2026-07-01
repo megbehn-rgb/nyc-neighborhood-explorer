@@ -114,6 +114,47 @@
 .subway-btn--active:hover  { background: #002d8a; border-color: #002d8a; }
 .subway-btn--active:active { background: #002070; border-color: #002070; }
 
+/* ── Find Me button ──────────────────────────────────────────────────── */
+.findme-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  font: 500 13px/1 var(--font);
+  color: var(--text-primary);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.findme-btn:hover  { background: rgba(0, 0, 0, 0.07); }
+.findme-btn:active { background: rgba(0, 0, 0, 0.12); }
+
+.findme-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Spinner shown while geolocation is pending */
+.findme-spinner {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid rgba(0, 0, 0, 0.18);
+  border-top-color: var(--text-primary);
+  border-radius: 50%;
+  animation: findme-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes findme-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Quiz Me button ──────────────────────────────────────────────────── */
 .quiz-me-btn {
   display: flex;
@@ -151,6 +192,31 @@
 
 .topbar .vibe-tag {
   font-size: 11px;
+}
+
+/* ── Bottom toast notification ───────────────────────────────────────── */
+.app-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: rgba(26, 26, 26, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font: 500 13px/1.5 var(--font);
+  max-width: calc(100vw - 48px);
+  text-align: center;
+  pointer-events: none;
+  animation: toast-slide-up 0.22s ease;
+}
+
+@keyframes toast-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 /* ── Shared glass card style (quiz mode, search dropdown, detail panel) ─ */
@@ -200,7 +266,8 @@
   /* Smaller action buttons */
   .topbar-main .random-btn.glass,
   .quiz-me-btn,
-  .subway-btn {
+  .subway-btn,
+  .findme-btn {
     height: 32px;
     padding: 0 10px;
     font-size: 12px;

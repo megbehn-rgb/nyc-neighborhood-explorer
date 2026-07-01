@@ -35,3 +35,43 @@ body {
   height: 100dvh;
   position: relative;
 }
+
+/* ── Find Me location marker ─────────────────────────────────────────── */
+.find-me-marker {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  cursor: default;
+}
+
+.find-me-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  background: #4264fb;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+
+.find-me-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.3);
+  width: 44px;
+  height: 44px;
+  background: rgba(66, 100, 251, 0.18);
+  border-radius: 50%;
+  animation: find-me-pulse 2.4s ease-out infinite;
+}
+
+@keyframes find-me-pulse {
+  0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  75%  { transform: translate(-50%, -50%) scale(1);   opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1);   opacity: 0; }
+}
