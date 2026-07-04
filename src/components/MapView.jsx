@@ -130,7 +130,7 @@ export default function MapView({
     if (!colorMapRef.current) return;
     const colorMap = colorMapRef.current;
     const hoveredId = hoveredRef.current;
-    const allBoroughs = ['Manhattan', 'Brooklyn', 'Queens'];
+    const allBoroughs = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
     const boroughFilterActive = activeBoroughs && activeBoroughs.length < allBoroughs.length;
     const dimmedSet = new Set(
       neighborhoodData
@@ -177,9 +177,9 @@ export default function MapView({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: [-73.94, 40.70],
-      zoom: IS_MOBILE ? 10 : 10,
-      minZoom: 10,
+      center: [-73.94, 40.65],
+      zoom: IS_MOBILE ? 9.5 : 10,
+      minZoom: 9,
       maxZoom: 16,
     });
 
@@ -493,7 +493,7 @@ export default function MapView({
     if (!map || !flyToId) return;
 
     if (flyToId === '__reset__') {
-      map.flyTo({ center: [-73.94, 40.70], zoom: 10, duration: 900 });
+      map.flyTo({ center: [-73.94, 40.65], zoom: IS_MOBILE ? 9.5 : 10, duration: 900 });
       onFlyComplete?.();
       return;
     }

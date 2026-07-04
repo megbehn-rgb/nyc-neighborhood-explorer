@@ -3,7 +3,7 @@ import neighborhoodData from '../data/neighborhoodData';
 
 const BY_ID = Object.fromEntries(neighborhoodData.map(n => [n.id, n]));
 
-const ALL_BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens'];
+const ALL_BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
 
 export default function QuizMode({
   current, score, result, finished, total,
@@ -53,7 +53,7 @@ export default function QuizMode({
                 onClick={() => onBoroughToggle(b)}
                 title={`${quizBoroughs.includes(b) ? 'Exclude' : 'Include'} ${b}`}
               >
-                {b === 'Manhattan' ? 'MN' : b === 'Brooklyn' ? 'BK' : 'QN'}
+                {b === 'Manhattan' ? 'MN' : b === 'Brooklyn' ? 'BK' : b === 'Queens' ? 'QN' : b === 'Bronx' ? 'BX' : 'SI'}
               </button>
             ))}
           </div>

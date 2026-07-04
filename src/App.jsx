@@ -9,7 +9,7 @@ import neighborhoodData from './data/neighborhoodData';
 import './App.css';
 
 const ALL_IDS = neighborhoodData.map(n => n.id);
-const ALL_BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens'];
+const ALL_BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
 const TOTAL_NEIGHBORHOODS = neighborhoodData.length;
 
 function shuffle(arr) {
