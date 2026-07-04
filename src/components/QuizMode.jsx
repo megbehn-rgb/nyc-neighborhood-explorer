@@ -3,15 +3,21 @@ import neighborhoodData from '../data/neighborhoodData';
 
 const BY_ID = Object.fromEntries(neighborhoodData.map(n => [n.id, n]));
 
-export default function QuizMode({ current, score, result, finished, total, onExit, onRestart }) {
-  const currentName  = current           ? (BY_ID[current]?.name           ?? current)           : null;
-  const clickedName  = result?.clickedId ? (BY_ID[result.clickedId]?.name  ?? result.clickedId)  : null;
-  const correctName  = result?.correctId ? (BY_ID[result.correctId]?.name  ?? result.correctId)  : null;
+const ALL_BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens'];
+
+export default function QuizMode({
+  current, score, result, finished, total,
+  quizBoroughs, onBoroughToggle,
+  onExit, onRestart,
+}) {
+  const currentName = current           ? (BY_ID[current]?.name           ?? current)           : null;
+  const clickedName = result?.clickedId ? (BY_ID[result.clickedId]?.name  ?? result.clickedId)  : null;
+  const correctName = result?.correctId ? (BY_ID[result.correctId]?.name  ?? result.correctId)  : null;
 
   if (finished) {
     const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
     const msg =
-      pct === 100 ? 'Perfect score! You know Manhattan cold.' :
+      pct === 100 ? 'Perfect score! You know every block.' :
       pct >= 80   ? 'Impressive — you really know the city.' :
       pct >= 60   ? "Not bad! A few more walks and you'll have it." :
                     'Time to explore more neighborhoods!';
@@ -31,8 +37,6 @@ export default function QuizMode({ current, score, result, finished, total, onEx
     );
   }
 
-  const remaining = total - score.total - (result ? 0 : 0);
-
   return (
     <>
       <div className="quiz-bar glass">
@@ -41,6 +45,18 @@ export default function QuizMode({ current, score, result, finished, total, onEx
           <span className="quiz-name">{currentName}?</span>
         </div>
         <div className="quiz-right">
+          <div className="quiz-boroughs">
+            {ALL_BOROUGHS.map(b => (
+              <button
+                key={b}
+                className={`quiz-borough-btn${quizBoroughs.includes(b) ? ' quiz-borough-btn--active' : ''}`}
+                onClick={() => onBoroughToggle(b)}
+                title={`${quizBoroughs.includes(b) ? 'Exclude' : 'Include'} ${b}`}
+              >
+                {b === 'Manhattan' ? 'MN' : b === 'Brooklyn' ? 'BK' : 'QN'}
+              </button>
+            ))}
+          </div>
           <span className="quiz-score">
             {score.correct}&thinsp;/&thinsp;{score.total}
             <span className="quiz-score-label"> correct</span>

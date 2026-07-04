@@ -44,7 +44,7 @@ const LABEL_GROUPS = {
 };
 
 export default function MapView({
-  selected, activeTags, flyToId, onFlyComplete, onSelect,
+  selected, activeTags, activeBoroughs, flyToId, onFlyComplete, onSelect,
   quizMode, quizResult, onQuizClick, subwayVisible,
   findMeActive, onFindMeComplete, onToast,
 }) {
@@ -82,13 +82,13 @@ export default function MapView({
 
   const rebuildPaint = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !geojsonRef.current || !colorMapRef.current) return;
+    if (!map || !geojsonRef.current) return;
     if (!map.getLayer('hoods-fill')) return;
 
     const features = geojsonRef.current.features;
-    const colorMap = colorMapRef.current;
 
     // ── Quiz mode ────────────────────────────────────────────────────
+    // Quiz mode doesn't need the color map — handle it before the colorMap guard.
     if (quizMode) {
       if (quizResult) {
         const { correctId, clickedId } = quizResult;
@@ -127,14 +127,20 @@ export default function MapView({
     }
 
     // ── Normal mode ───────────────────────────────────────────────────
+    if (!colorMapRef.current) return;
+    const colorMap = colorMapRef.current;
     const hoveredId = hoveredRef.current;
-    const dimmedSet = activeTags.length > 0
-      ? new Set(
-          neighborhoodData
-            .filter(n => !n.vibe_tags.some(t => activeTags.includes(t)))
-            .map(n => n.id)
-        )
-      : new Set();
+    const allBoroughs = ['Manhattan', 'Brooklyn', 'Queens'];
+    const boroughFilterActive = activeBoroughs && activeBoroughs.length < allBoroughs.length;
+    const dimmedSet = new Set(
+      neighborhoodData
+        .filter(n => {
+          const boroughDimmed = boroughFilterActive && !activeBoroughs.includes(n.borough);
+          const tagDimmed = activeTags.length > 0 && !n.vibe_tags.some(t => activeTags.includes(t));
+          return boroughDimmed || tagDimmed;
+        })
+        .map(n => n.id)
+    );
 
     const fillColorExpr   = ['match', ['get', 'id']];
     const fillOpacityExpr = ['match', ['get', 'id']];
@@ -162,7 +168,7 @@ export default function MapView({
       hoveredId ?? '__none__', STROKE_WIDTH_HOVER,
       STROKE_WIDTH_BASE,
     ]);
-  }, [activeTags, quizMode, quizResult, getFillColor]);
+  }, [activeTags, activeBoroughs, quizMode, quizResult, getFillColor]);
 
   // ── Init map (runs once) ───────────────────────────────────────────
   useEffect(() => {
@@ -171,8 +177,8 @@ export default function MapView({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: [-73.971, 40.776],
-      zoom: IS_MOBILE ? 12 : 11.5,
+      center: [-73.94, 40.70],
+      zoom: IS_MOBILE ? 10 : 10,
       minZoom: 10,
       maxZoom: 16,
     });
@@ -212,10 +218,9 @@ export default function MapView({
         }
       }
 
-      const res = await fetch('/manhattan-neighborhoods.geojson');
+      const res = await fetch('/nyc-neighborhoods.geojson');
       const geojson = await res.json();
       geojsonRef.current = geojson;
-      colorMapRef.current = greedyColor(geojson.features, PALETTE.length);
 
       map.addSource('neighborhoods', { type: 'geojson', data: geojson });
 
@@ -233,7 +238,11 @@ export default function MapView({
         paint: { 'line-color': '#fff', 'line-width': STROKE_WIDTH_BASE, 'line-opacity': 0.85 },
       });
 
-      rebuildPaint();
+      // Defer graph coloring — lets the map render immediately, then applies colors
+      setTimeout(() => {
+        colorMapRef.current = greedyColor(geojson.features, PALETTE.length);
+        rebuildPaintRef.current?.();
+      }, 0);
 
       // ── Subway overlay ──────────────────────────────────────────
       try {
@@ -448,7 +457,7 @@ export default function MapView({
             const hood = BY_ID[foundId];
             if (hood) onSelectRef.current(hood);
           } else {
-            onToastRef.current?.("You're outside Manhattan — explore the map to find neighborhoods");
+            onToastRef.current?.("You're outside the mapped area — explore the map to find neighborhoods");
           }
         }
 
@@ -484,7 +493,7 @@ export default function MapView({
     if (!map || !flyToId) return;
 
     if (flyToId === '__reset__') {
-      map.flyTo({ center: [-73.971, 40.776], zoom: IS_MOBILE ? 12 : 11.5, duration: 900 });
+      map.flyTo({ center: [-73.94, 40.70], zoom: 10, duration: 900 });
       onFlyComplete?.();
       return;
     }
@@ -508,7 +517,7 @@ export default function MapView({
 
     const padding = IS_MOBILE
       ? { top: 50, bottom: Math.round(window.innerHeight * 0.58), left: 20, right: 20 }
-      : { top: 120, bottom: 60, left: 60, right: 420 };
+      : { top: 80, bottom: 60, left: 60, right: 420 };
     map.fitBounds(
       [[minLng, minLat], [maxLng, maxLat]],
       { padding, maxZoom: 15, duration: 900 }

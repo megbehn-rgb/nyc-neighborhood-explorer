@@ -9,6 +9,8 @@ import neighborhoodData from './data/neighborhoodData';
 import './App.css';
 
 const ALL_IDS = neighborhoodData.map(n => n.id);
+const ALL_BOROUGHS = ['Manhattan', 'Brooklyn', 'Queens'];
+const TOTAL_NEIGHBORHOODS = neighborhoodData.length;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -19,40 +21,63 @@ function shuffle(arr) {
   return a;
 }
 
+function loadVisited() {
+  try {
+    const raw = localStorage.getItem('nyc-explorer-visited');
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+}
+
+function saveVisited(set) {
+  try { localStorage.setItem('nyc-explorer-visited', JSON.stringify([...set])); } catch {}
+}
+
 export default function App() {
   // ── Normal mode state ────────────────────────────────────────────
-  const [selected,      setSelected]      = useState(null);
-  const [activeTags,    setActiveTags]    = useState([]);
-  const [flyToId,       setFlyToId]       = useState(null);
-  const [subwayVisible, setSubwayVisible] = useState(false);
+  const [selected,        setSelected]        = useState(null);
+  const [activeTags,      setActiveTags]      = useState([]);
+  const [activeBoroughs,  setActiveBoroughs]  = useState([...ALL_BOROUGHS]);
+  const [flyToId,         setFlyToId]         = useState(null);
+  const [subwayVisible,   setSubwayVisible]   = useState(false);
+  const [visitedIds,      setVisitedIds]      = useState(loadVisited);
 
   // ── Find Me state ────────────────────────────────────────────────
-  const [findMeState, setFindMeState] = useState('idle'); // 'idle' | 'locating'
+  const [findMeState, setFindMeState] = useState('idle');
   const [toast,       setToast]       = useState(null);
 
-  // Auto-dismiss toast after 3.8 s
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(null), 3800);
     return () => clearTimeout(id);
   }, [toast]);
 
-  const showToast = useCallback((msg) => setToast(msg), []);
-  const handleFindMe = useCallback(() => setFindMeState('locating'), []);
+  const showToast        = useCallback((msg) => setToast(msg), []);
+  const handleFindMe     = useCallback(() => setFindMeState('locating'), []);
   const onFindMeComplete = useCallback(() => setFindMeState('idle'), []);
 
   // ── Quiz state ───────────────────────────────────────────────────
-  const [quizActive,   setQuizActive]   = useState(false);
-  const [quizQueue,    setQuizQueue]    = useState([]);
-  const [quizCurrent,  setQuizCurrent]  = useState(null);
-  const [quizScore,    setQuizScore]    = useState({ correct: 0, total: 0 });
-  const [quizResult,   setQuizResult]   = useState(null);
-  const [quizFinished, setQuizFinished] = useState(false);
+  const [quizActive,    setQuizActive]    = useState(false);
+  const [quizQueue,     setQuizQueue]     = useState([]);
+  const [quizCurrent,   setQuizCurrent]   = useState(null);
+  const [quizScore,     setQuizScore]     = useState({ correct: 0, total: 0 });
+  const [quizResult,    setQuizResult]    = useState(null);
+  const [quizFinished,  setQuizFinished]  = useState(false);
+  const [quizBoroughs,  setQuizBoroughs]  = useState([...ALL_BOROUGHS]);
+  const [quizTotal,     setQuizTotal]     = useState(ALL_IDS.length);
 
   // ── Normal mode handlers ─────────────────────────────────────────
   const selectNeighborhood = useCallback((hood) => {
     setSelected(hood);
     setFlyToId(hood?.id ?? null);
+    if (hood?.id) {
+      setVisitedIds(prev => {
+        if (prev.has(hood.id)) return prev;
+        const next = new Set(prev);
+        next.add(hood.id);
+        saveVisited(next);
+        return next;
+      });
+    }
   }, []);
 
   const closePanel = useCallback(() => {
@@ -69,9 +94,24 @@ export default function App() {
     setActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   }, []);
 
+  const toggleBorough = useCallback((borough) => {
+    setActiveBoroughs(prev => {
+      if (prev.includes(borough)) {
+        // Keep at least one active
+        if (prev.length === 1) return prev;
+        return prev.filter(b => b !== borough);
+      }
+      return [...prev, borough];
+    });
+  }, []);
+
   // ── Quiz handlers ────────────────────────────────────────────────
   const startQuiz = useCallback(() => {
-    const order = shuffle(ALL_IDS);
+    const filtered = neighborhoodData
+      .filter(n => quizBoroughs.includes(n.borough))
+      .map(n => n.id);
+    const order = shuffle(filtered);
+    setQuizTotal(order.length);
     setQuizQueue(order.slice(1));
     setQuizCurrent(order[0]);
     setQuizScore({ correct: 0, total: 0 });
@@ -80,7 +120,7 @@ export default function App() {
     setQuizActive(true);
     setSelected(null);
     setFlyToId('__reset__');
-  }, []);
+  }, [quizBoroughs]);
 
   const exitQuiz = useCallback(() => {
     setQuizActive(false);
@@ -90,6 +130,37 @@ export default function App() {
     setQuizScore({ correct: 0, total: 0 });
     setFlyToId('__reset__');
   }, []);
+
+  const handleQuizBoroughToggle = useCallback((borough) => {
+    setQuizBoroughs(prev => {
+      if (prev.includes(borough)) {
+        if (prev.length === 1) return prev;
+        return prev.filter(b => b !== borough);
+      }
+      return [...prev, borough];
+    });
+    // Reset quiz with new borough selection
+    setQuizResult(null);
+    setQuizFinished(false);
+    setQuizScore({ correct: 0, total: 0 });
+    // Re-start with updated boroughs via startQuiz (triggered by quizBoroughs state change)
+  }, []);
+
+  // When quiz borough selection changes mid-quiz, restart with new pool
+  useEffect(() => {
+    if (!quizActive) return;
+    const filtered = neighborhoodData
+      .filter(n => quizBoroughs.includes(n.borough))
+      .map(n => n.id);
+    const order = shuffle(filtered);
+    setQuizTotal(order.length);
+    setQuizQueue(order.slice(1));
+    setQuizCurrent(order[0]);
+    setQuizScore({ correct: 0, total: 0 });
+    setQuizResult(null);
+    setQuizFinished(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizBoroughs]);
 
   const handleQuizClick = useCallback((clickedId) => {
     if (quizResult) return;
@@ -110,6 +181,8 @@ export default function App() {
     }, 2000);
   }, [quizResult, quizCurrent, quizQueue]);
 
+  const visitedCount = visitedIds.size;
+
   return (
     <div className="app">
       {quizActive ? (
@@ -119,7 +192,9 @@ export default function App() {
           score={quizScore}
           result={quizResult}
           finished={quizFinished}
-          total={ALL_IDS.length}
+          total={quizTotal}
+          quizBoroughs={quizBoroughs}
+          onBoroughToggle={handleQuizBoroughToggle}
           onExit={exitQuiz}
           onRestart={startQuiz}
         />
@@ -159,6 +234,25 @@ export default function App() {
               </button>
             </div>
           </div>
+
+          {/* ── Borough filter ──────────────────────────────────── */}
+          <div className="borough-filter">
+            <span className="borough-filter-label">Borough</span>
+            {ALL_BOROUGHS.map(b => (
+              <button
+                key={b}
+                className={`borough-btn${activeBoroughs.includes(b) ? ' borough-btn--active' : ''}`}
+                onClick={() => toggleBorough(b)}
+                aria-pressed={activeBoroughs.includes(b)}
+              >
+                {b}
+              </button>
+            ))}
+            <span className="visited-counter">
+              <strong>{visitedCount}</strong> / {TOTAL_NEIGHBORHOODS} visited
+            </span>
+          </div>
+
           <VibeFilter activeTags={activeTags} onToggle={toggleTag} />
         </div>
       )}
@@ -167,6 +261,7 @@ export default function App() {
       <MapView
         selected={selected}
         activeTags={activeTags}
+        activeBoroughs={activeBoroughs}
         flyToId={flyToId}
         onFlyComplete={() => setFlyToId(null)}
         onSelect={selectNeighborhood}

@@ -13,13 +13,13 @@
   --text-muted: #6b7280;
   --radius: 10px;
   --panel-width: 380px;
-  --topbar-height: 90px;
+  --topbar-height: 135px;
 }
 
 @media (max-width: 767px) {
   :root {
-    /* Two-row topbar (title+actions, search) + filter row */
-    --topbar-height: 130px;
+    /* topbar-main (title+actions, search) + borough row + vibe row */
+    --topbar-height: 175px;
   }
 }
 
